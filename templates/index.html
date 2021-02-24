@@ -29,7 +29,7 @@
         object-fit: contain;
         border: 1px solid black;
     }
-    button {
+    .show-img {
         position: relative;
         left: 50%;
         transform: translateX(-50%);
@@ -42,14 +42,26 @@
     .forbidden {
         cursor: not-allowed;
     }
+    .login {
+        height: 60px;
+        width: 120px;
+    }
 </style>
 </head>
 
 <body>
+<form action="/login" method="get">
+    <input type="hidden" name="username" value="A" />
+    <button type="submit" class="login">Login as A</button>
+</form>
+<form action="/login" method="get">
+    <input type="hidden" name="username" value="B" />
+    <button type="submit" class="login">Login as B</button>
+</form>
 
 <div class="img_wrapper">
     <img src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==" alt>
-    <button onclick="showImg(this);">Show Image</button>
+    <button class="show-img" onclick="showImg(this);">Show Image</button>
 </div>
 <script>
     function showImg(e) {

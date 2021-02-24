@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, make_response, send_file, redirect, jsonify
+from flask import Flask, render_template, request, make_response, send_file, redirect, jsonify, session
 from flask_caching import Cache
-import json
+import random
 
 app = Flask(__name__, static_url_path='/')
+app.secret_key = "Something you will never guess"
 
 
 # cache = Cache(config={"CACHE_TYPE": "simple"})
@@ -13,7 +14,7 @@ app = Flask(__name__, static_url_path='/')
 def check_scrapper():
     ua = request.user_agent
     if not str(ua):
-        return "Scrapper Forbidden", 403
+        return "Scrapper Prohibited", 403
 
 
 @app.after_request
@@ -32,6 +33,9 @@ def error(e):
 @app.route('/')
 # @cache.cached(timeout=100)  # 服务器缓存
 def hello_world():
+    username = session.get("username", "")
+    if username:
+        return redirect('/login?username=' + username)
     res = make_response(render_template("index.html"))
     res.headers["Cache-Control"] = "no-cache"  # 浏览器缓存
     return res
@@ -40,6 +44,27 @@ def hello_world():
 @app.route('/favicon.ico')
 def favicon():
     return app.send_static_file('img/favicon.ico')
+
+
+@app.route('/login')
+def login():
+    username = request.args["username"]
+    if not session.get("username", 0):
+        session["username"] = username
+
+    # 针对每个浏览器的session唯一的token，保证足够随机使跨域攻击者无法伪造这个值即可
+    if not session.get("csrf_token", 0):
+        session["csrf_token"] = str(random.randint(1, 999999))
+    csrf_token = session["csrf_token"]
+    return render_template("pose.html", username=username, token=csrf_token)
+
+
+@app.route('/pose', methods=["POST"])
+def pose():
+    token = session.get("csrf_token", 0)
+    if (not token) or (request.form["_csrf_token"] != token):
+        return "Unauthorized", 401
+    return "Success", 200
 
 
 @app.route("/static/<type>/<name>")
