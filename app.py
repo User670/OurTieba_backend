@@ -59,8 +59,11 @@ def login():
     return render_template("pose.html", username=username, token=csrf_token)
 
 
+# post请求时检查是否为同一域名并校验csrf token
 @app.route('/pose', methods=["POST"])
 def pose():
+    if not request.headers.get("referer"):
+        return "Forbidden", 403
     token = session.get("csrf_token", 0)
     if (not token) or (request.form["_csrf_token"] != token):
         return "Unauthorized", 401
