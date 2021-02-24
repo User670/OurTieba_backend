@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, make_response, send_file, redirect, jsonify, session
+from flask import Flask, render_template, request, make_response, send_file, redirect, jsonify, session, url_for
 from flask_caching import Cache
 import random
 
@@ -35,7 +35,7 @@ def error(e):
 def hello_world():
     username = session.get("username", "")
     if username:
-        return redirect('/login?username=' + username)
+        return redirect(url_for("login", username=username))
     res = make_response(render_template("index.html"))
     res.headers["Cache-Control"] = "no-cache"  # 浏览器缓存
     return res
@@ -46,9 +46,8 @@ def favicon():
     return app.send_static_file('img/favicon.ico')
 
 
-@app.route('/login')
-def login():
-    username = request.args["username"]
+@app.route('/login?<string:username>')
+def login(username):
     if not session.get("username", 0):
         session["username"] = username
 
@@ -62,7 +61,8 @@ def login():
 # post请求时检查是否为同一域名并校验csrf token
 @app.route('/pose', methods=["POST"])
 def pose():
-    if not request.headers.get("referer"):
+    referer = request.headers.get("referer")
+    if (not referer) or (not referer.startswith("http://127.0.0.1/")):
         return "Forbidden", 403
     token = session.get("csrf_token", 0)
     if (not token) or (request.form["_csrf_token"] != token):
