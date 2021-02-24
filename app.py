@@ -46,8 +46,9 @@ def favicon():
     return app.send_static_file('img/favicon.ico')
 
 
-@app.route('/login?<string:username>')
-def login(username):
+@app.route('/login')
+def login():
+    username = request.args["username"]
     if not session.get("username", 0):
         session["username"] = username
 
