@@ -89,5 +89,22 @@ def get_img():
     return jsonify({"url": "/img/Genshin.png"})
 
 
+# send file as attachment
+@app.route("/download_img")
+def download_img():
+    return send_file("static/img/Genshin.png", as_attachment=True)
+
+
+# read uploaded file
+# curl -F "file=@...; filename=..." ip:port/read_file
+@app.route("/read_file", methods=["POST"])
+def read_file():
+    file = request.files["file"]
+    name = file.filename  # must use "filename" here AND in curl request
+    content = file.read().decode("utf-8")
+    print(f"{name}:\n{content}")
+    return "Success"
+
+
 if __name__ == '__main__':
     app.run()
